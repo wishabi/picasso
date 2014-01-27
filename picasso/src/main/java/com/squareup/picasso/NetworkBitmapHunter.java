@@ -18,6 +18,8 @@ package com.squareup.picasso;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.NetworkInfo;
+import android.os.Build;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -107,6 +109,14 @@ class NetworkBitmapHunter extends BitmapHunter {
 
         markStream.reset(mark);
       }
+
+      if (data.inBitmap != null &&
+          Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+        if (options == null)
+          options = new BitmapFactory.Options();
+        Utils.setInBitmap(options, data.inBitmap);
+      }
+
       return BitmapFactory.decodeStream(stream, null, options);
     }
   }

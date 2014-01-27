@@ -21,10 +21,12 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Looper;
 import android.os.Process;
 import android.os.StatFs;
 import android.provider.Settings;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +38,7 @@ import static android.content.pm.ApplicationInfo.FLAG_LARGE_HEAP;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.HONEYCOMB;
 import static android.os.Build.VERSION_CODES.HONEYCOMB_MR1;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static android.provider.Settings.System.AIRPLANE_MODE_ON;
 
@@ -79,6 +82,16 @@ final class Utils {
       throw new IllegalStateException("Negative size: " + bitmap);
     }
     return result;
+  }
+
+  static void setInBitmap(BitmapFactory.Options options, Bitmap inBitmap) {
+    if (SDK_INT >= HONEYCOMB) {
+      options.inBitmap = inBitmap;
+      options.inMutable = true;
+      options.inPreferredConfig = inBitmap.getConfig();
+      if (SDK_INT <= KITKAT)
+        options.inSampleSize = 1;
+    }
   }
 
   static void checkNotMain() {
