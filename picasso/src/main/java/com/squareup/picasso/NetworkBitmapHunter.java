@@ -110,11 +110,20 @@ class NetworkBitmapHunter extends BitmapHunter {
         markStream.reset(mark);
       }
 
-      if (data.inBitmap != null &&
-          Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-        if (options == null)
-          options = new BitmapFactory.Options();
-        Utils.setInBitmap(options, data.inBitmap);
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB &&
+          data.inBitmap != null) {
+        if (data.versionCode != data.versionMatch.get())
+          return null;
+
+        synchronized (data.versionMatch) {
+          if (data.versionCode != data.versionMatch.get())
+            return null;
+
+          if (options == null)
+            options = new BitmapFactory.Options();
+          Utils.setInBitmap(options, data.inBitmap);
+          return BitmapFactory.decodeStream(stream, null, options);
+        }
       }
 
       return BitmapFactory.decodeStream(stream, null, options);

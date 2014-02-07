@@ -20,6 +20,7 @@ import android.net.Uri;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.Collections.unmodifiableList;
 
@@ -65,10 +66,15 @@ public final class Request {
   public final boolean hasRotationPivot;
   /** A bitmap to decode into. */
   public final Bitmap inBitmap;
+  /** A version code for inBitmap to guard against race conditions. */
+  public final int versionCode;
+  /** A version code for inBitmap to guard against race conditions. */
+  public final AtomicInteger versionMatch;
 
   private Request(Uri uri, int resourceId, List<Transformation> transformations, int targetWidth,
       int targetHeight, boolean centerCrop, boolean centerInside, float rotationDegrees,
-      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot, Bitmap inBitmap) {
+      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot, Bitmap inBitmap,
+      int versionCode, AtomicInteger versionMatch) {
     this.uri = uri;
     this.resourceId = resourceId;
     if (transformations == null) {
@@ -85,6 +91,8 @@ public final class Request {
     this.rotationPivotY = rotationPivotY;
     this.hasRotationPivot = hasRotationPivot;
     this.inBitmap = inBitmap;
+    this.versionCode = versionCode;
+    this.versionMatch = versionMatch;
   }
 
   String getName() {
@@ -127,6 +135,8 @@ public final class Request {
     private float rotationPivotY;
     private boolean hasRotationPivot;
     private Bitmap inBitmap;
+    private int versionCode;
+    private AtomicInteger versionMatch;
     private List<Transformation> transformations;
 
     /** Start building a request using the specified {@link Uri}. */
@@ -156,6 +166,8 @@ public final class Request {
       rotationPivotY = request.rotationPivotY;
       hasRotationPivot = request.hasRotationPivot;
       inBitmap = request.inBitmap;
+      versionCode = request.versionCode;
+      versionMatch = request.versionMatch;
       if (request.transformations != null) {
         transformations = new ArrayList<Transformation>(request.transformations);
       }
@@ -281,8 +293,10 @@ public final class Request {
     }
 
     /** Decode the image into the provided bitmap. */
-    public Builder inBitmap(Bitmap inBitmap) {
+    public Builder inBitmap(Bitmap inBitmap, int versionCode, AtomicInteger versionMatch) {
       this.inBitmap = inBitmap;
+      this.versionCode = versionCode;
+      this.versionMatch = versionMatch;
       return this;
     }
 
@@ -315,7 +329,7 @@ public final class Request {
       }
       return new Request(uri, resourceId, transformations, targetWidth, targetHeight, centerCrop,
           centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot,
-          inBitmap);
+          inBitmap, versionCode, versionMatch);
     }
   }
 }

@@ -20,8 +20,10 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.widget.ImageView;
-import java.io.IOException;
 import org.jetbrains.annotations.TestOnly;
+
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.squareup.picasso.BitmapHunter.forRequest;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
@@ -196,9 +198,9 @@ public class RequestCreator {
   }
 
   /** Decode the image into the provided bitmap. */
-  public RequestCreator inBitmap(Bitmap inBitmap) {
+  public RequestCreator inBitmap(Bitmap inBitmap, AtomicInteger versionMatch) {
     skipMemoryCache();
-    data.inBitmap(inBitmap);
+    data.inBitmap(inBitmap, versionMatch.incrementAndGet(), versionMatch);
     return this;
   }
 
