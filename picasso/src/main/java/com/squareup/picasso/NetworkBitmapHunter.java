@@ -75,30 +75,31 @@ class NetworkBitmapHunter extends BitmapHunter {
   }
 
   private Bitmap decodeStream(InputStream stream, Request data) throws IOException {
-    if (stream == null) {
+    if (stream == null)
       return null;
-    }
-    MarkableInputStream markStream = new MarkableInputStream(stream);
-    stream = markStream;
 
-    long mark = markStream.savePosition(MARKER);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB &&
+        data.inBitmap != null) {
+      if (data.versionCode != data.versionMatch.get())
+        return null;
 
-    boolean isWebPFile = Utils.isWebPFile(stream);
-    markStream.reset(mark);
-    // When decode WebP network stream, BitmapFactory throw JNI Exception and make app crash.
-    // Decode byte array instead
-    if (isWebPFile) {
-      byte[] bytes = Utils.toByteArray(stream);
-      BitmapFactory.Options options = null;
-      if (data.hasSize()) {
-        options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
+      synchronized (data.versionMatch) {
+        if (data.versionCode != data.versionMatch.get())
+          return null;
 
-        BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
-        calculateInSampleSize(data.targetWidth, data.targetHeight, options);
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        calculateInSampleSize(data.inBitmap.getWidth(),
+            data.inBitmap.getHeight(), options);
+        Utils.setInBitmap(options, data.inBitmap);
+        options.inTempStorage = data.inTempStorage;
+        return BitmapFactory.decodeStream(stream, null, options);
       }
-      return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
     } else {
+      MarkableInputStream markStream = new MarkableInputStream(stream);
+      stream = markStream;
+
+      long mark = markStream.savePosition(MARKER);
+
       BitmapFactory.Options options = null;
       if (data.hasSize()) {
         options = new BitmapFactory.Options();
@@ -108,22 +109,6 @@ class NetworkBitmapHunter extends BitmapHunter {
         calculateInSampleSize(data.targetWidth, data.targetHeight, options);
 
         markStream.reset(mark);
-      }
-
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB &&
-          data.inBitmap != null) {
-        if (data.versionCode != data.versionMatch.get())
-          return null;
-
-        synchronized (data.versionMatch) {
-          if (data.versionCode != data.versionMatch.get())
-            return null;
-
-          if (options == null)
-            options = new BitmapFactory.Options();
-          Utils.setInBitmap(options, data.inBitmap);
-          return BitmapFactory.decodeStream(stream, null, options);
-        }
       }
 
       return BitmapFactory.decodeStream(stream, null, options);

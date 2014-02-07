@@ -198,9 +198,11 @@ public class RequestCreator {
   }
 
   /** Decode the image into the provided bitmap. */
-  public RequestCreator inBitmap(Bitmap inBitmap, AtomicInteger versionMatch) {
+  public RequestCreator inBitmap(Bitmap inBitmap, byte[] inTempStorage,
+                                 AtomicInteger versionMatch) {
     skipMemoryCache();
-    data.inBitmap(inBitmap, versionMatch.incrementAndGet(), versionMatch);
+    data.inBitmap(inBitmap, inTempStorage, versionMatch.incrementAndGet(),
+        versionMatch);
     return this;
   }
 

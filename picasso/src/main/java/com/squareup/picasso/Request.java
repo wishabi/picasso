@@ -66,6 +66,8 @@ public final class Request {
   public final boolean hasRotationPivot;
   /** A bitmap to decode into. */
   public final Bitmap inBitmap;
+  /** Temporary storage for bitmap decoding. */
+  public final byte[] inTempStorage;
   /** A version code for inBitmap to guard against race conditions. */
   public final int versionCode;
   /** A version code for inBitmap to guard against race conditions. */
@@ -74,7 +76,7 @@ public final class Request {
   private Request(Uri uri, int resourceId, List<Transformation> transformations, int targetWidth,
       int targetHeight, boolean centerCrop, boolean centerInside, float rotationDegrees,
       float rotationPivotX, float rotationPivotY, boolean hasRotationPivot, Bitmap inBitmap,
-      int versionCode, AtomicInteger versionMatch) {
+      byte[] inTempStorage, int versionCode, AtomicInteger versionMatch) {
     this.uri = uri;
     this.resourceId = resourceId;
     if (transformations == null) {
@@ -91,6 +93,7 @@ public final class Request {
     this.rotationPivotY = rotationPivotY;
     this.hasRotationPivot = hasRotationPivot;
     this.inBitmap = inBitmap;
+    this.inTempStorage = inTempStorage;
     this.versionCode = versionCode;
     this.versionMatch = versionMatch;
   }
@@ -135,6 +138,7 @@ public final class Request {
     private float rotationPivotY;
     private boolean hasRotationPivot;
     private Bitmap inBitmap;
+    private byte[] inTempStorage;
     private int versionCode;
     private AtomicInteger versionMatch;
     private List<Transformation> transformations;
@@ -166,6 +170,7 @@ public final class Request {
       rotationPivotY = request.rotationPivotY;
       hasRotationPivot = request.hasRotationPivot;
       inBitmap = request.inBitmap;
+      inTempStorage = request.inTempStorage;
       versionCode = request.versionCode;
       versionMatch = request.versionMatch;
       if (request.transformations != null) {
@@ -293,8 +298,10 @@ public final class Request {
     }
 
     /** Decode the image into the provided bitmap. */
-    public Builder inBitmap(Bitmap inBitmap, int versionCode, AtomicInteger versionMatch) {
+    public Builder inBitmap(Bitmap inBitmap, byte[] inTempStorage, int versionCode,
+                            AtomicInteger versionMatch) {
       this.inBitmap = inBitmap;
+      this.inTempStorage = inTempStorage;
       this.versionCode = versionCode;
       this.versionMatch = versionMatch;
       return this;
@@ -329,7 +336,7 @@ public final class Request {
       }
       return new Request(uri, resourceId, transformations, targetWidth, targetHeight, centerCrop,
           centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot,
-          inBitmap, versionCode, versionMatch);
+          inBitmap, inTempStorage, versionCode, versionMatch);
     }
   }
 }
