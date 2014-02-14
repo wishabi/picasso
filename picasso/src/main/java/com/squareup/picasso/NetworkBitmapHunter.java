@@ -78,8 +78,9 @@ class NetworkBitmapHunter extends BitmapHunter {
     if (stream == null)
       return null;
 
+    Bitmap inBitmap = data.inBitmap.get();
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB &&
-        data.inBitmap != null) {
+        inBitmap != null) {
       if (data.versionCode != data.versionMatch.get())
         return null;
 
@@ -88,10 +89,10 @@ class NetworkBitmapHunter extends BitmapHunter {
           return null;
 
         BitmapFactory.Options options = new BitmapFactory.Options();
-        calculateInSampleSize(data.inBitmap.getWidth(),
-            data.inBitmap.getHeight(), options);
-        Utils.setInBitmap(options, data.inBitmap);
-        options.inTempStorage = data.inTempStorage;
+        calculateInSampleSize(inBitmap.getWidth(), inBitmap.getHeight(),
+            options);
+        Utils.setInBitmap(options, inBitmap);
+        options.inTempStorage = data.inTempStorage.get();
         return BitmapFactory.decodeStream(stream, null, options);
       }
     } else {

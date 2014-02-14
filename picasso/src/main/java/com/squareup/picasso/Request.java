@@ -18,6 +18,7 @@ package com.squareup.picasso;
 import android.graphics.Bitmap;
 import android.net.Uri;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -65,9 +66,9 @@ public final class Request {
   /** Whether or not {@link #rotationPivotX} and {@link #rotationPivotY} are set. */
   public final boolean hasRotationPivot;
   /** A bitmap to decode into. */
-  public final Bitmap inBitmap;
+  public final WeakReference<Bitmap> inBitmap;
   /** Temporary storage for bitmap decoding. */
-  public final byte[] inTempStorage;
+  public final WeakReference<byte[]> inTempStorage;
   /** A version code for inBitmap to guard against race conditions. */
   public final int versionCode;
   /** A version code for inBitmap to guard against race conditions. */
@@ -92,8 +93,8 @@ public final class Request {
     this.rotationPivotX = rotationPivotX;
     this.rotationPivotY = rotationPivotY;
     this.hasRotationPivot = hasRotationPivot;
-    this.inBitmap = inBitmap;
-    this.inTempStorage = inTempStorage;
+    this.inBitmap = new WeakReference<Bitmap>(inBitmap);
+    this.inTempStorage = new WeakReference<byte[]>(inTempStorage);
     this.versionCode = versionCode;
     this.versionMatch = versionMatch;
   }
@@ -169,8 +170,8 @@ public final class Request {
       rotationPivotX = request.rotationPivotX;
       rotationPivotY = request.rotationPivotY;
       hasRotationPivot = request.hasRotationPivot;
-      inBitmap = request.inBitmap;
-      inTempStorage = request.inTempStorage;
+      inBitmap = request.inBitmap.get();
+      inTempStorage = request.inTempStorage.get();
       versionCode = request.versionCode;
       versionMatch = request.versionMatch;
       if (request.transformations != null) {
