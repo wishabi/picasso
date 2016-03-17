@@ -2,7 +2,6 @@ apply plugin: 'android-library'
 
 dependencies {
   compile 'com.squareup.okhttp:okhttp:1.2.+'
-  compile 'com.intellij:annotations:12.0'
 }
 
 android {
