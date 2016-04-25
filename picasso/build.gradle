@@ -1,8 +1,9 @@
-apply plugin: 'android-library'
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 
 dependencies {
   compile 'com.squareup.okhttp:okhttp:1.2.+'
-  compile 'com.intellij:annotations:12.0'
+  compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
 
 android {
@@ -13,4 +14,21 @@ android {
     minSdkVersion 7
     targetSdkVersion Integer.parseInt(project.ANDROID_BUILD_TARGET_SDK_VERSION)
   }
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+}
+buildscript {
+      ext.kotlin_version = '1.0.1-2'
+      ext.kotlin_version = '1.0.1-1'
+      repositories {
+        jcenter()
+        mavenCentral()
+      }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        }
+    }
+repositories {
+    mavenCentral()
 }
