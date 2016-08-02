@@ -24,9 +24,11 @@ import android.support.annotation.Nullable;
 import android.support.annotation.Px;
 import com.squareup.picasso.Picasso.Priority;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.Collections.unmodifiableList;
 
@@ -91,11 +93,20 @@ public final class Request {
   public final Bitmap.Config config;
   /** The priority of this request. */
   public final Priority priority;
+  /** A bitmap to decode into. */
+  public final WeakReference<Bitmap> inBitmap;
+  /** A version code for inBitmap to guard against race conditions. */
+  public final int versionCode;
+  /** A version code fro inBitmap to guard against race conditions. */
+  public final AtomicInteger versionMatch;
+  /** Temporary storage for bitmap decoding. */
+  public final WeakReference<byte[]> inTempStorage;
 
   private Request(Uri uri, int resourceId, String stableKey, List<Transformation> transformations,
       int targetWidth, int targetHeight, boolean centerCrop, boolean centerInside,
       boolean onlyScaleDown, float rotationDegrees, float rotationPivotX, float rotationPivotY,
-      boolean hasRotationPivot, boolean purgeable, Bitmap.Config config, Priority priority) {
+      boolean hasRotationPivot, boolean purgeable, Bitmap.Config config, Priority priority,
+      Bitmap inBitmap, byte[] inTempStorage, int versionCode, AtomicInteger versionMatch) {
     this.uri = uri;
     this.resourceId = resourceId;
     this.stableKey = stableKey;
@@ -116,6 +127,10 @@ public final class Request {
     this.purgeable = purgeable;
     this.config = config;
     this.priority = priority;
+    this.inBitmap = new WeakReference<>(inBitmap);
+    this.inTempStorage = new WeakReference<>(inTempStorage);
+    this.versionCode = versionCode;
+    this.versionMatch = versionMatch;
   }
 
   @Override public String toString() {
@@ -217,6 +232,10 @@ public final class Request {
     private List<Transformation> transformations;
     private Bitmap.Config config;
     private Priority priority;
+    private Bitmap inBitmap;
+    private byte[] inTempStorage;
+    private int versionCode;
+    private AtomicInteger versionMatch;
 
     /** Start building a request using the specified {@link Uri}. */
     public Builder(@NonNull Uri uri) {
@@ -253,6 +272,10 @@ public final class Request {
       }
       config = request.config;
       priority = request.priority;
+      inBitmap = request.inBitmap.get();
+      inTempStorage = request.inTempStorage.get();
+      versionCode = request.versionCode;
+      versionMatch = request.versionMatch;
     }
 
     boolean hasImage() {
@@ -437,6 +460,16 @@ public final class Request {
       return this;
     }
 
+    /** Decode the image into the provided bitmap. */
+    public Builder inBitmap(@NonNull Bitmap inBitmap, byte[] inTempStorage,
+                            int versionCode, AtomicInteger versionMatch) {
+      this.inBitmap = inBitmap;
+      this.inTempStorage = inTempStorage;
+      this.versionCode = versionCode;
+      this.versionMatch = versionMatch;
+      return this;
+    }
+
     /**
      * Add a custom transformation to be applied to the image.
      * <p>
@@ -489,7 +522,8 @@ public final class Request {
       }
       return new Request(uri, resourceId, stableKey, transformations, targetWidth, targetHeight,
           centerCrop, centerInside, onlyScaleDown, rotationDegrees, rotationPivotX, rotationPivotY,
-          hasRotationPivot, purgeable, config, priority);
+          hasRotationPivot, purgeable, config, priority, inBitmap, inTempStorage,
+          versionCode, versionMatch);
     }
   }
 }

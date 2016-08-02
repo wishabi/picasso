@@ -397,6 +397,13 @@ public class RequestCreator {
     return this;
   }
 
+  /** Decode the image into the provided bitmap. */
+  public RequestCreator inBitmap(Bitmap bitmap, byte[] inTempStorage, AtomicInteger versionMatch) {
+    memoryPolicy(NO_CACHE, NO_STORE);
+    data.inBitmap(bitmap, inTempStorage, versionMatch.incrementAndGet(), versionMatch);
+    return this;
+  }
+
   /** Disable brief fade in of images loaded from the disk cache or network. */
   public RequestCreator noFade() {
     noFade = true;

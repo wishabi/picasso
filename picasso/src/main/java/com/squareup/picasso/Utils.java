@@ -22,6 +22,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -128,6 +129,14 @@ final class Utils {
       throw new NullPointerException(message);
     }
     return value;
+  }
+
+  static void setInBitmap(BitmapFactory.Options options, Bitmap bitmap) {
+    options.inBitmap = bitmap;
+    options.inMutable = true;
+    options.inPreferredConfig = bitmap.getConfig();
+    if (SDK_INT <= KITKAT)
+      options.inSampleSize = 1;
   }
 
   static void checkNotMain() {

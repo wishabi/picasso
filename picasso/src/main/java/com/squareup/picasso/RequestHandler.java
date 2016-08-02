@@ -139,13 +139,17 @@ public abstract class RequestHandler {
     final boolean justBounds = data.hasSize();
     final boolean hasConfig = data.config != null;
     BitmapFactory.Options options = null;
-    if (justBounds || hasConfig || data.purgeable) {
+    if (justBounds || hasConfig || data.purgeable || data.inBitmap != null) {
       options = new BitmapFactory.Options();
       options.inJustDecodeBounds = justBounds;
       options.inInputShareable = data.purgeable;
       options.inPurgeable = data.purgeable;
       if (hasConfig) {
         options.inPreferredConfig = data.config;
+      }
+      if (data.inBitmap != null) {
+        Utils.setInBitmap(options, data.inBitmap.get());
+        options.inTempStorage = data.inTempStorage.get();
       }
     }
     return options;

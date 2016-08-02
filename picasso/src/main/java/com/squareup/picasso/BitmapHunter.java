@@ -20,6 +20,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.NetworkInfo;
 import android.os.Build;
+import android.renderscript.ScriptGroup;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -41,6 +43,7 @@ import static com.squareup.picasso.MemoryPolicy.shouldReadFromMemoryCache;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Picasso.Priority;
 import static com.squareup.picasso.Picasso.Priority.LOW;
+import static com.squareup.picasso.Picasso.with;
 import static com.squareup.picasso.Utils.OWNER_HUNTER;
 import static com.squareup.picasso.Utils.VERB_DECODED;
 import static com.squareup.picasso.Utils.VERB_EXECUTING;
@@ -120,6 +123,7 @@ class BitmapHunter implements Runnable {
    * {@code inSampleSize}).
    */
   static Bitmap decodeStream(InputStream stream, Request request) throws IOException {
+    InputStream originalStream = stream;
     MarkableInputStream markStream = new MarkableInputStream(stream);
     stream = markStream;
     markStream.allowMarksToExpire(false);
@@ -134,7 +138,20 @@ class BitmapHunter implements Runnable {
     // We decode from a byte array because, a) when decoding a WebP network stream, BitmapFactory
     // throws a JNI Exception, so we workaround by decoding a byte array, or b) user requested
     // purgeable, which only affects bitmaps decoded from byte arrays.
-    if (isWebPFile || isPurgeable) {
+    Bitmap inBitmap = request.inBitmap.get();
+    if (inBitmap != null) {
+      if (request.versionCode != request.versionMatch.get())
+        return null;
+
+      synchronized (request.versionMatch) {
+        if (request.versionCode != request.versionMatch.get())
+          return null;
+
+        RequestHandler.calculateInSampleSize(inBitmap.getWidth(), inBitmap.getHeight(), options,
+            request);
+        return BitmapFactory.decodeStream(originalStream, null, options);
+      }
+    } else if (isWebPFile || isPurgeable) {
       byte[] bytes = Utils.toByteArray(stream);
       if (calculateSize) {
         BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
@@ -150,6 +167,7 @@ class BitmapHunter implements Runnable {
         markStream.reset(mark);
       }
       markStream.allowMarksToExpire(true);
+
       Bitmap bitmap = BitmapFactory.decodeStream(stream, null, options);
       if (bitmap == null) {
         // Treat null as an IO exception, we will eventually retry.
