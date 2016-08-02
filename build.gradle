@@ -28,4 +28,4 @@ subprojects {
   }
 }
 
-apply from: rootProject.file('dependencies.gradle')
+apply from: rootProject.file('picasso/dependencies.gradle')
