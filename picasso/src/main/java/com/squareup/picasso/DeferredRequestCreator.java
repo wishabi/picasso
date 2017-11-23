@@ -17,8 +17,10 @@ package com.squareup.picasso;
 
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
-import java.lang.ref.WeakReference;
+
 import org.jetbrains.annotations.TestOnly;
+
+import java.lang.ref.WeakReference;
 
 class DeferredRequestCreator implements ViewTreeObserver.OnPreDrawListener {
 
@@ -50,11 +52,12 @@ class DeferredRequestCreator implements ViewTreeObserver.OnPreDrawListener {
     int width = target.getMeasuredWidth();
     int height = target.getMeasuredHeight();
 
-    if (width <= 0 || height <= 0) {
+    if (width <= 0 || height <= 0 || target.isLayoutRequested()) {
       return true;
     }
 
     vto.removeOnPreDrawListener(this);
+    this.target.clear();
 
     this.creator.unfit().resize(width, height).into(target, callback);
     return true;
@@ -71,5 +74,6 @@ class DeferredRequestCreator implements ViewTreeObserver.OnPreDrawListener {
       return;
     }
     vto.removeOnPreDrawListener(this);
+    this.target.clear();
   }
 }
