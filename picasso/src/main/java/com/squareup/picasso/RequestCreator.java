@@ -26,7 +26,6 @@ import android.widget.RemoteViews;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.jetbrains.annotations.TestOnly;
 
 import static com.squareup.picasso.BitmapHunter.forRequest;
 import static com.squareup.picasso.MemoryPolicy.NO_CACHE;
@@ -75,7 +74,7 @@ public class RequestCreator {
     this.data = new Request.Builder(uri, resourceId, picasso.defaultBitmapConfig);
   }
 
-  @TestOnly RequestCreator() {
+  RequestCreator() {
     this.picasso = null;
     this.data = new Request.Builder(null, 0, null);
   }
