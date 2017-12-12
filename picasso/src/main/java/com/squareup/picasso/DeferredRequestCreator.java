@@ -49,11 +49,12 @@ class DeferredRequestCreator implements ViewTreeObserver.OnPreDrawListener {
     int width = target.getWidth();
     int height = target.getHeight();
 
-    if (width <= 0 || height <= 0) {
+    if (width <= 0 || height <= 0 || target.isLayoutRequested()) {
       return true;
     }
 
     vto.removeOnPreDrawListener(this);
+    this.target.clear();
 
     this.creator.unfit().resize(width, height).into(target, callback);
     return true;
@@ -70,5 +71,6 @@ class DeferredRequestCreator implements ViewTreeObserver.OnPreDrawListener {
       return;
     }
     vto.removeOnPreDrawListener(this);
+    this.target.clear();
   }
 }
